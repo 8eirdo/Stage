@@ -1,24 +1,29 @@
 <?php
-    $logo = "logo.png"; // Path to your logo image
-    $boss_given_amount = 5000; // Initial amount given by the boss
-    $money_spent = 0; // Initially, no money is spent
-    $money_left = $boss_given_amount - $money_spent; // Calculate the initial money left
+session_start();
 
-    // If the form is submitted, update the money spent
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        if (isset($_POST['money_spent'])) {
-            $new_money_spent = $_POST['money_spent']; // Newly spent money
-            if ($money_spent + $new_money_spent <= $boss_given_amount) {
-                // Add the newly spent money to the previous spent money
-                $money_spent += $new_money_spent;
-            } else {
-                // If the total spent exceeds the amount given by the boss,
-                // set money spent to the boss given amount
-                $money_spent = $boss_given_amount;
-            }
-            $money_left = $boss_given_amount - $money_spent; // Recalculate the money left
+$logo = "logo.png"; // Path to your logo image
+$boss_given_amount = 5000; // Initial amount given by the boss
+
+// Check if session variable 'money_spent' exists
+if (!isset($_SESSION['money_spent'])) {
+    $_SESSION['money_spent'] = 0; // Initialize money spent if not set
+}
+
+// Calculate the initial money left
+$money_left = $boss_given_amount - $_SESSION['money_spent'];
+
+// If the form is submitted, update the money spent
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (isset($_POST['money_spent'])) {
+        $new_money_spent = $_POST['money_spent']; // Newly spent money
+        if (is_numeric($new_money_spent)) { // Check if the entered value is numeric
+            $new_money_spent = floatval($new_money_spent); // Convert the entered value to float
+            $_SESSION['money_spent'] += $new_money_spent; // Add the newly spent money to the previous spent money
+            $_SESSION['money_spent'] = min($_SESSION['money_spent'], $boss_given_amount); // Ensure the total spent does not exceed the amount given by the boss
+            $money_left = $boss_given_amount - $_SESSION['money_spent']; // Recalculate the money left
         }
     }
+}
 ?>
 
 <!DOCTYPE html>
@@ -48,7 +53,7 @@
             </div>
             <div class="bordered">
                 <label for="montant_spent">Montant Spent:</label>
-                <h3><?php echo number_format($money_spent, 0, '.', ' '); ?> MAD</h3>
+                <h3><?php echo number_format($_SESSION['money_spent'], 0, '.', ' '); ?> MAD</h3>
             </div>
         </div>
     </div>
@@ -56,8 +61,15 @@
     <div class="bordered">
         <form method="post">
             <label for="money_spent">Money Spent:</label>
-            <input type="number" name="money_spent" id="money_spent" value="<?php echo $money_spent; ?>" required>
+            <input type="number" name="money_spent" id="money_spent" value="<?php echo $_SESSION['money_spent']; ?>" required>
             <button type="submit">Update</button>
+        </form>
+    </div>
+    <div  class="clearfix">
+        <form action="">
+            <div class="bordered"><h3>1</h3></div>
+            <div class="bordered"><h3>2</h3></div>
+            <div class="bordered"><h3>3</h3></div>
         </form>
     </div>
 
